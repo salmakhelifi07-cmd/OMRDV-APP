@@ -1,0 +1,69 @@
+{
+    "karim": {
+        "password": "12345ka",
+        "marque": "ford",
+        "matricule": "78TN5421",
+        "status": "approved",
+        "camion_status": [],
+        "reservations": [
+            {
+                "date": "2026-04-25",
+                "heure": "21:22",
+                "type": "Chargement",
+                "zone": "Zone C - Magasin cale",
+                "marchandise": "Vrac",
+                "code": "2970",
+                "manager_reply": ""
+            }
+        ],
+        "reclamations": [
+            {
+                "message": "ok",
+                "manager_reply": ""
+            }
+        ]
+    },
+    "amine": {
+        "password": "12345amine",
+        "marque": "isuzu",
+        "matricule": "22TN564444",
+        "status": "approved",
+        "camion_status": [],
+        "reservations": [
+            {
+                "date": "2026-04-22",
+                "heure": "21:25",
+                "type": "D\u00e9chargement",
+                "zone": "Zone A - Bord de quai",
+                "marchandise": "Marchandise diverse",
+                "code": null,
+                "manager_reply": ""
+            }
+        ],
+        "reclamations": []
+    },
+    "montassar": {
+        "password": "12345monta",
+        "marque": "bmw",
+        "matricule": "254TN5554",
+        "status": "approved",
+        "camion_status": [],
+        "reservations": [
+            {
+                "date": "2026-04-20",
+                "heure": "00:00",
+                "type": "Chargement",
+                "zone": "Zone B - Stockage",
+                "marchandise": "Marchandise diverse",
+                "code": "5055",
+                "manager_reply": ""
+            }
+        ],
+        "reclamations": [
+            {
+                "message": "aujourd'hui le char",
+                "manager_reply": ""
+            }
+        ]
+    }
+}

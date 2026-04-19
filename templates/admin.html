@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Admin Dashboard</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+body{
+    background: linear-gradient(135deg,#0f172a,#0b1220);
+    color:white;
+    font-family:"Segoe UI", Arial;
+    min-height:100vh;
+}
+
+.container{
+    max-width:1100px;
+    margin-top:40px;
+}
+
+/* MENU */
+.menu-card{
+    background:#111827;
+    border:1px solid #1f2937;
+    border-radius:18px;
+    padding:30px;
+    text-align:center;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.menu-card:hover{
+    transform:translateY(-6px);
+    box-shadow:0 10px 25px rgba(0,0,0,0.5);
+}
+
+.icon{
+    font-size:45px;
+    margin-bottom:10px;
+}
+
+/* SECTIONS */
+.section{
+    display:none;
+    margin-top:20px;
+}
+
+/* CARD */
+.card-user{
+    background:#111827;
+    border-radius:18px;
+    padding:20px;
+    margin:15px 0;
+}
+
+/* RESERVATION */
+.reservation{
+    background:#0b1220;
+    border:1px solid #1f2937;
+    padding:15px;
+    border-radius:12px;
+    margin-top:10px;
+}
+
+/* BUTTON */
+.btn-small{
+    font-size:12px;
+    margin:3px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>🚛 Admin Panel</h2>
+<p class="text-secondary">Full Management System</p>
+
+<!-- ================= MENU ================= -->
+<div id="menu">
+
+<div class="row g-4">
+
+    <div class="col-md-6">
+        <div class="menu-card" onclick="openTab('users')">
+            <div class="icon">👤</div>
+            <h5>Users</h5>
+        </div>
+    </div>
+    
+
+    <div class="col-md-6">
+        <div class="menu-card" onclick="openTab('reservations')">
+            <div class="icon">🚛</div>
+            <h5>Reservations</h5>
+        </div>
+    </div>
+    <div class="col-md-6">
+    <div class="menu-card" onclick="openTab('camion')">
+        <div class="icon">🚚</div>
+        <h5>Camion Situation</h5>
+    </div>
+</div>
+
+</div>
+
+<div class="text-center mt-5">
+    <a href="/logout" class="btn btn-danger">🚪 Logout</a>
+</div>
+
+</div>
+
+<!-- ================= USERS ================= -->
+<div id="users" class="section">
+
+<button onclick="backMenu()" class="btn btn-secondary mb-3">⬅ Back</button>
+
+<h3>👤 Users</h3>
+
+{% for u,d in users.items() %}
+{% if u != "admin" %}
+
+<div class="card-user">
+
+<h5>👤 {{ u }}</h5>
+<p>🚚 {{ d.marque }} | {{ d.matricule }}</p>
+
+<a href="/delete/{{ u }}" class="btn btn-danger btn-sm btn-small">🗑 Delete</a>
+<a href="/edit_user/{{ u }}" class="btn btn-warning btn-sm btn-small">✏ Modify</a>
+
+</div>
+
+{% endif %}
+{% endfor %}
+
+</div>
+
+<!-- ================= RESERVATIONS ================= -->
+<div id="reservations" class="section">
+
+<button onclick="backMenu()" class="btn btn-secondary mb-3">⬅ Back</button>
+
+<h3>🚛 Reservations</h3>
+
+{% for u,d in users.items() %}
+{% if u != "admin" %}
+
+<div class="card-user">
+
+<h5>👤 {{ u }}</h5>
+
+{% for r in d.reservations %}
+
+<div class="reservation">
+
+📅 {{ r.date }} | ⏰ {{ r.heure }}<br>
+🚛 {{ r.type }} | 📍 {{ r.zone }}<br>
+📦 Marchandise: {{ r.marchandise }}
+<!-- STATUS + CODE -->
+<div class="mt-2">
+{% if r.code %}
+    <span class="badge bg-success">✔ Confirmed</span>
+    <span class="badge bg-info">Code: {{ r.code }}</span>
+{% else %}
+    <span class="badge bg-warning text-dark">Pending</span>
+{% endif %}
+</div>
+
+<!-- ACTIONS -->
+<div class="mt-2">
+
+<a href="/confirm/{{ u }}/{{ loop.index0 }}" class="btn btn-success btn-sm btn-small">
+✔ Confirm
+</a>
+
+<a href="/edit_res/{{ u }}/{{ loop.index0 }}" class="btn btn-primary btn-sm btn-small">
+✏ Update
+</a>
+
+<a href="/delete_res/{{ u }}/{{ loop.index0 }}" class="btn btn-danger btn-sm btn-small">
+🗑 Delete
+</a>
+
+
+</div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+{% endif %}
+{% endfor %}
+
+</div>
+<!-- ================= CAMION SITUATION ================= -->
+<div id="camion" class="section">
+
+<button onclick="backMenu()" class="btn btn-secondary mb-3">⬅ Back</button>
+
+<h3>🚚 Camion Situation</h3>
+
+{% for u,d in users.items() %}
+{% if u != "admin" %}
+
+<div class="card-user">
+
+<h5>👤 {{ u }}</h5>
+<p>🚚 {{ d.marque }} | {{ d.matricule }}</p>
+
+<!-- 🔥 ACTION BUTTONS -->
+<div class="mb-3">
+
+<div class="mb-3">
+
+<a href="/camion_status" class="btn btn-warning btn-sm">
+🔁 Entrée / Sortie
+</a>
+
+</div>
+
+</div>
+
+{% if d.camion_logs %}
+
+    {% for log in d.camion_logs %}
+
+    <div class="reservation">
+
+        <!-- EVENT -->
+        {% if log.event == "E" %}
+            <span class="badge bg-success">🟢 Entrée</span>
+            <p class="mt-2">Camion au  port</p>
+        {% elif log.event == "S" %}
+            <span class="badge bg-danger">🔴 Sortie</span>
+            <p class="mt-2">Camion sorti du port</p>
+        {% endif %}
+
+        <!-- DELETE -->
+        <a href="/delete_camion_log/{{ u }}/{{ loop.index0 }}"
+           class="btn btn-danger btn-sm mt-2">
+           🗑 Delete
+        </a>
+
+    </div>
+
+    {% endfor %}
+
+{% else %}
+
+    <p class="text-secondary">No camion activity</p>
+
+{% endif %}
+
+</div>
+
+{% endif %}
+{% endfor %}
+
+</div>
+
+</div>
+
+<script>
+function openTab(id){
+    document.getElementById("menu").style.display="none";
+    document.querySelectorAll(".section").forEach(s => s.style.display="none");
+    document.getElementById(id).style.display="block";
+}
+
+function backMenu(){
+    document.querySelectorAll(".section").forEach(s => s.style.display="none");
+    document.getElementById("menu").style.display="block";
+}
+</script>
+
+</body>
+</html>

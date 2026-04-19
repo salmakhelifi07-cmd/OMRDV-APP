@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Manager Panel</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body{
+    background: linear-gradient(135deg,#0f172a,#111827);
+    color:white;
+    font-family:"Segoe UI", Arial;
+    min-height:100vh;
+}
+
+.container{
+    max-width:1100px;
+    margin-top:40px;
+    text-align:center;
+}
+
+.menu-card{
+    background:#111827;
+    border:1px solid #1f2937;
+    border-radius:18px;
+    padding:25px;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.menu-card:hover{
+    transform:translateY(-6px);
+}
+
+.section{
+    display:none;
+    margin-top:20px;
+    text-align:left;
+}
+
+.card-box{
+    background:#111827;
+    padding:15px;
+    border-radius:12px;
+    margin-top:10px;
+    border:1px solid #1f2937;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>🧑‍💼 Manager Panel</h2>
+
+<!-- MENU -->
+<div id="menu" class="row g-4 mt-4">
+
+    <div class="col-md-4">
+        <div class="menu-card" onclick="openTab('reclamations')">📩 Reclamations</div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="menu-card" onclick="openTab('stats')">📊 KPIs</div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="menu-card" onclick="openTab('dashboard')">👥 Users</div>
+    </div>
+
+</div>
+
+<a href="/logout" class="btn btn-danger mt-4">Logout</a>
+
+<!-- ================= RECLAMATIONS ================= -->
+<div id="reclamations" class="section">
+
+<button class="btn btn-secondary mb-3" onclick="back()">⬅ Back</button>
+
+<h3>📩 Reclamations</h3>
+
+{% for u, data in users.items() %}
+{% for r in data.reclamations %}
+
+<div class="card-box">
+<b>{{ u }}</b>
+<div class="alert alert-warning mt-2">{{ r.message }}</div>
+
+{% if r.manager_reply %}
+<div class="alert alert-success">{{ r.manager_reply }}</div>
+{% else %}
+<form method="POST" action="/manager_reply/{{ u }}/{{ loop.index0 }}">
+<textarea class="form-control" name="reply"></textarea>
+<button class="btn btn-info btn-sm mt-2">Reply</button>
+</form>
+{% endif %}
+</div>
+
+{% endfor %}
+{% endfor %}
+
+</div>
+
+<!-- ================= KPIs ================= -->
+<div id="stats" class="section">
+
+<button class="btn btn-secondary mb-3" onclick="back()">⬅ Back</button>
+
+<h3>📊 KPIs Dashboard</h3>
+
+<div class="row g-3">
+
+<div class="col-md-3 card-box">👥 Users<br><h4>{{ total_users }}</h4></div>
+<div class="col-md-3 card-box">📦 Reservations<br><h4>{{ total_reservations }}</h4></div>
+<div class="col-md-3 card-box">✅ Confirmed<br><h4>{{ confirmed_reservations }}</h4></div>
+<div class="col-md-3 card-box">📩 Reclamations<br><h4>{{ total_reclamations }}</h4></div>
+<div class="col-md-3 card-box">🚚 Camions Inside<br><h4>{{ camions_inside }}</h4></div>
+
+
+</div>
+
+
+<!-- ================= CONFIRMATION RATE ================= -->
+<div class="col-md-12 card-box mt-3">
+
+<h5>📈 Confirmation Rate</h5>
+
+<h3>{{ confirmation_rate }}%</h3>
+
+<div class="progress mt-2" style="height:10px;">
+  <div class="progress-bar bg-success"
+       role="progressbar"
+       style="width: confirmation_rate ;">
+  </div>
+</div>
+
+</div>
+
+<!-- ================= RECLAMATION RATE ================= -->
+<div class="col-md-12 card-box mt-3">
+
+<h5>📩 Reclamations Rate</h5>
+
+<h3>
+    {{ ((total_reclamations / total_reservations) * 100) | round(1) if total_reservations > 0 else 0 }}%
+</h3>
+
+<div class="progress mt-2" style="height:10px;">
+  <div class="progress-bar bg-danger"
+       role="progressbar"
+       style="width: Reclamation Rate;">
+  </div>
+</div>
+
+</div>
+
+<!-- ================= MARCHANDISE CONFIRMED RATE ================= -->
+<div class="col-md-12 card-box mt-3">
+
+<h5>📦 Confirmed Marchandise Rate</h5>
+
+<div class="row g-2 mt-2">
+
+{% for type, rate in marchandise_stats.items() %}
+
+<div class="col-md-3">
+    <div class="card-box text-center">
+        📦 {{ type }}<br>
+        <h4>{{ rate }}%</h4>
+
+        <div class="progress mt-2" style="height:8px;">
+            <div class="progress-bar bg-success"
+                 style="width:  rate Marchansise ;">
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endfor %}
+
+</div>
+
+</div>
+
+</div>
+
+
+
+<canvas id="chart1"></canvas>
+<canvas id="chart2" class="mt-4"></canvas>
+
+</div>
+
+<!-- ================= USERS ================= -->
+<div id="dashboard" class="section">
+
+<button class="btn btn-secondary mb-3" onclick="back()">⬅ Back</button>
+
+<h3>👥 Users Dashboard</h3>
+
+<table class="table table-dark table-striped mt-3">
+<thead>
+<tr>
+    <th>User</th>
+    <th>Matricule</th>
+    <th>Marque</th>
+    <th>Status</th>
+    <th>Action</th>
+    <th>Camion Status</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for u, data in users.items() %}
+<tr>
+    <td>{{ u }}</td>
+    <td>{{ data.matricule }}</td>
+    <td>{{ data.marque }}</td>
+
+    <td>
+        {% if data.status == "approved" %}
+            <span class="badge bg-success">Approved</span>
+        {% elif data.status == "rejected" %}
+            <span class="badge bg-danger">Rejected</span>
+        {% else %}
+            <span class="badge bg-warning">Pending</span>
+        {% endif %}
+    </td>
+
+    <td>
+        <a href="/approve/{{ u }}" class="btn btn-success btn-sm">✔</a>
+        <a href="/reject/{{ u }}" class="btn btn-danger btn-sm">✖</a>
+    </td>
+
+   <td>
+    {% if data.camion_logs %}
+        
+        {% set last_log = data.camion_logs[-1] %}
+
+        {% if last_log.event == "E" %}
+            <span class="badge bg-success">🟢 Entrée</span>
+        {% elif last_log.event == "S" %}
+            <span class="badge bg-danger">🔴 Sortie</span>
+        {% endif %}
+
+    {% else %}
+        <span class="text-secondary">No logs</span>
+    {% endif %}
+</td>
+
+</tr>
+{% endfor %}
+
+</tbody>
+</table>
+
+</div>
+
+</div>
+
+<!-- JS -->
+<script>
+function openTab(id){
+    document.getElementById("menu").style.display="none";
+    document.querySelectorAll(".section").forEach(s=>s.style.display="none");
+    document.getElementById(id).style.display="block";
+}
+
+function back(){
+    document.getElementById("menu").style.display="block";
+    document.querySelectorAll(".section").forEach(s=>s.style.display="none");
+}
+</script>
+
+<!-- ================= CHARTS FIXED ================= -->
+<script>
+const confirmed = { confirmed_reservations };
+const total = { total_reservations };
+const reclamations = { total_reclamations };
+const pending = total - confirmed;
+const camions = { camions_inside };
+
+// PIE chart
+new Chart(document.getElementById("chart1"), {
+    type: 'doughnut',
+    data: {
+        labels: ["Confirmed", "Pending", "Reclamations"],
+        datasets: [{
+            data: [confirmed, pending, reclamations],
+            backgroundColor: ["#22c55e","#f59e0b","#ef4444"]
+        }]
+    }
+});
+
+// BAR chart
+new Chart(document.getElementById("chart2"), {
+    type: 'line',
+    data: {
+        labels: ["Users", "Reservations", "Camions"],
+        datasets: [{
+            data: [{ total_users }, total, camions],
+            backgroundColor: ["#3b82f6","#f59e0b","#22c55e"]
+        }]
+    }
+});
+</script>
+
+</body>
+</html>
